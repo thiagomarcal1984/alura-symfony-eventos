@@ -23,3 +23,15 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\EventListener\ExceptionEventListener:
+        tags: 
+            # As tags associando eventos aos seus listeners seguem o padrão abaixo, em camelCase:
+            # - { name: Pacote\NomeDoListener, event: Pacote\EventoEscutado }
+            # - { name: HttpKernel\EventListener, event: Kernel\Exception }
+            # A ideia é converter o padrão acima para dot.case neste arquivo YAML:
+            - { name: kernel.event_listener, event: kernel.exception}
+            # Para que o evento declarado seja escutado, a classe ExceptionEventListener
+            # deve implementar uma função seguind o padrão "on" + "Pacote" + "Classe":
+            # public function onPadraoClasse(ExceptionEvent $event) {}
+            # public function onKernelException(ExceptionEvent $event) {}
+
