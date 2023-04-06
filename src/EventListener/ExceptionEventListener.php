@@ -16,6 +16,13 @@ class ExceptionEventListener
         $errorMessage =  $event->getThrowable()->getMessage();
 
         // $response = $event->getResponse(); // Não funciona, retorna null.
+        /** 
+         * Por que esse tipo de erro pode acontecer se o método getResponse existe?
+         * Em PHP existe o conceito de nullable types, como já falamos em cursos 
+         * anteriores. Um tipo de retorno ?Response, por exemplo, indica que esse 
+         * retorno pode ser um objeto do tipo Response ou null. É exatamente o 
+         * caso do método getResponse.
+         */
 
         $response = new Response();
         $response->setContent($errorMessage);
