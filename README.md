@@ -590,3 +590,20 @@ class ExceptionEventListener
         }
 }
 ```
+# Para saber mais: filtro no Twig
+Além de usarmos a sintaxe `{% trans %} texto a ser traduzido {% endtrans %}` no Twig, podemos também usar `trans` como um filtro. Isso é especialmente útil quando precisamos traduzir o conteúdo de variáveis.
+
+Ex. de tradução da variável `$message`:
+```HTML
+{{ message|trans }}
+```
+Alteração em `/templates/series/index.html.twig`:
+```HTML
+{# Resto do código#}
+    {% block title %}
+        {# {% trans %}series.list{% endtrans %} #}
+        {{ 'series.list' | trans }}
+    {% endblock %}
+{# Resto do código#}
+```
+Perceba que `series.list` é uma string, não um objeto. A string é enviada por parâmetro à função `trans` no Twig.
