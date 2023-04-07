@@ -249,3 +249,10 @@ Registered Listeners for "kernel.exception" Event
   #7      Symfony\Component\HttpKernel\EventListener\ErrorListener::onKernelException()      -128
  ------- ---------------------------------------------------------------------------------- ----------
 ```
+
+# Events vs Messenger
+EventListeners/EventSubscribers tratam os eventos de forma **síncrona** (o invocador do evento **pára** após disparar o evento); já os messengers tratam os eventos de forma **assíncrona** (o invocador do evento **NÃO pára** após disparar o evento).
+
+De preferência, `use o messenger`. Para mudar o tratamento de eventos de síncrono para assíncrono e vice versa, basta modificar o transporte no arquivo `messenger.yaml`. O messenger é um componente mais recente do Symfony, antigamente tínhamos apenas os event listeners/subscribers.
+
+Mas quando é bom usar Event Listeners/Subscribers? Quando o código necessariamente depender da resposta do tratamento do evento (nesse caso, com certeza precisaremos de um código **síncrono**).
