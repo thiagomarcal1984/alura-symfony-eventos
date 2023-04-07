@@ -486,3 +486,64 @@ class SeriesController extends AbstractController
     }
 }
 ```
+
+# Identificando o idioma
+Se o idioma não for fornecido na URL, o Event Listener pode tratar a requisição e redirecionar para o idioma presente no cabeçalho de requisição `Accept-Language`.
+
+Código resumido de `ExceptionEventListener.php`:
+
+```php
+<?php
+
+namespace App\EventListener;
+
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+// Usando o PHP 8, uma das anotações abaixo substituem 
+// as configurações feitas no arquivo services.yaml:
+
+// 1. Usando o evento em 'on' + PascalCase.
+// #[AsEventListener(event: 'kernel.exception')]
+// 2. Usando o método em camelCase
+// #[AsEventListener(method: 'myMethod')]
+// 3. Usando o método mágico __invoke(ExceptionEvent $event)
+#[AsEventListener()]
+class ExceptionEventListener
+{
+    private function __invoke(ExceptionEvent $event): void 
+    {
+        $error = $event->getThrowable();
+        if (!$error instanceof NotFoundHttpException) {
+            return;
+        }
+        $request = $event->getRequest();
+        $acceptLanguageHeader = $request->headers->get('Accept-Language');
+        // Conteúdo do cabeçalho Accept-Language: 
+        // pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,it;q=0.6
+        // O parâmetro "q" é a relevância
+
+        $languages = explode(',', $acceptLanguageHeader);
+        // [pt-BR, pt;q=0.9, en-US;q=0.8, en;q=0.7, it;q=0.6]
+        $language = explode(';', $languages[0])[0]; // Retorna 'pt-BR'
+        $language = str_replace('-', '_', $language); // Troca traço por underline.
+
+        // Se o código fosse 
+        // $language = explode(';', $languages[1])[0]; // Segundo resultado.
+        // Retornaria 'pt', sem o 'q=0.9'.
+
+        if (!str_starts_with($request->getPathInfo(), '/$language')) {
+            // Se o path não começa com o idioma que está no header Accept-Language,
+            // a resposta redireciona para o path prefixado com o idioma.
+            $response = new Response(status: 302); // Status para Redirecionamento.
+            $response
+                ->headers
+                ->add(['Location' => "/$language" . $request->getPathInfo()]);
+            $event->setResponse($response);
+        }
+
+    }
+}
+```
