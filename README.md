@@ -387,3 +387,58 @@ security:
         - { path: ^/(?!login|register), roles: ROLE_USER }
 # Resto do código
 ```
+# Traduzindo o projeto
+Conteúdo dos arquivos de mensagem: 
+```YAML
+# translations\messages.pt_BR.yaml
+series.list: Listagem de séries
+series.delete: Série removida com sucesso
+
+# translations\messages.en.yaml
+series.list: Series list
+series.delete: Series deleted successfully
+```
+
+Aplicando a tradução na rota `app_delete_series` em `SeriesController`:
+
+```php
+// Resto do código
+use Symfony\Contracts\Translation\TranslatorInterface;
+
+class SeriesController extends AbstractController
+{
+    public function __construct(
+        // Resto do código
+        private TranslatorInterface $translator,
+    )
+    {}
+    
+    // Resto do código
+        #[Route(
+        '/series/delete/{series}',
+        name: 'app_delete_series',
+        methods: ['DELETE'],
+    )]
+    public function deleteSeries(Series $series): Response
+    {
+        $this->seriesRepository->remove($series, true);
+        $this->messenger->dispatch(new SeriesWasDeleted($series));
+
+        // O método trans recebe como primeiro parâmetro o identificador
+        // do texto comum nos arquivos messages.idioma.yaml:
+        $this->addFlash('success', $this->translator->trans('series.delete'));
+
+        return $this->redirectToRoute('app_series');
+    }
+
+    // Resto do código
+}
+```
+Código de `/templates/series/index.html.twig` com o texto passível de tradução (note a função `trans` envolvendo o identificador do texto comum nos arquivos `messages.idioma.yaml`):
+```HTML
+{# Resto do código #}
+{% block title %}
+    {% trans %}series.list{% endtrans %}
+{% endblock %}
+{# Resto do código #}
+```
