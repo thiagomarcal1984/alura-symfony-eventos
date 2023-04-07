@@ -29,9 +29,18 @@ services:
             # - { name: Pacote\NomeDoListener, event: Pacote\EventoEscutado }
             # - { name: HttpKernel\EventListener, event: Kernel\Exception }
             # A ideia é converter o padrão acima para dot.case neste arquivo YAML:
-            - { name: kernel.event_listener, event: kernel.exception}
+
+            # - { name: kernel.event_listener, event: kernel.exception}
             # Para que o evento declarado seja escutado, a classe ExceptionEventListener
             # deve implementar uma função seguind o padrão "on" + "Pacote" + "Classe":
             # public function onPadraoClasse(ExceptionEvent $event) {}
             # public function onKernelException(ExceptionEvent $event) {}
+
+            # Outra forma de inserir a entrada de um par Listener/Evento é substituindo
+            # o valor event pelo valor method:
+            # - { name: kernel.event_listener, method: myMethod }
+
+            # A última forma de invocar um listener é omitindo no YAML o método executado 
+            # pelo listener e usar o método mágico __invoke(ExceptionEvent $event):
+            # - { name: kernel.event_listener }
 
