@@ -442,3 +442,47 @@ Código de `/templates/series/index.html.twig` com o texto passível de traduç�
 {% endblock %}
 {# Resto do código #}
 ```
+# Redirecionando com locale
+O redirecionamento das URL com o prefixo do locale é muito fácil. Basta retornar as rotas ao invés da URL hard-coded nos métodos (`return $this->redirectToRoute('nome_da_rota');`):
+
+```php
+// Resto do código
+class SeriesController extends AbstractController
+{
+    // Resto do código
+    #[Route(
+        '/series/create', 
+        name: 'app_add_series', 
+        methods: ['POST']
+    )]
+    public function addSeries(Request $request): Response
+    {
+        // Resto do código
+        return $this->redirectToRoute('app_series');
+    }
+
+    // Resto do código
+    #[Route(
+        '/series/delete/{series}', 
+        name: 'app_delete_series', 
+        methods: ['DELETE'],
+    )]
+    public function deleteSeries(Series $series): Response
+    {
+        // Resto do código
+        return $this->redirectToRoute('app_series');
+    }
+
+    // Resto do código
+    #[Route(
+        '/series/edit/{series}', 
+        name: 'app_store_series_changes', 
+        methods: ['PATCH']
+    )]
+    public function storeSeriesChanges(Series $series, Request $request): Response
+    {
+        // Resto do código
+        return $this->redirectToRoute('app_series');
+    }
+}
+```

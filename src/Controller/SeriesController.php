@@ -87,7 +87,7 @@ class SeriesController extends AbstractController
             "Série \"{$series->getName()}\" adicionada com sucesso"
         );
 
-        return new RedirectResponse('/series');
+        return $this->redirectToRoute('app_series');
     }
 
     #[Route(
@@ -124,6 +124,6 @@ class SeriesController extends AbstractController
         $this->addFlash('success', "Série \"{$series->getName()}\" editada com sucesso");
         $this->entityManager->flush();
 
-        return new RedirectResponse('/series');
+        return $this->redirectToRoute('app_series');
     }
 }
