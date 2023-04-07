@@ -294,3 +294,64 @@ controllers:
 # Resto do código.
 ```
 Problema: uma vez que o prefixo é configurado nas rotas, é obrigatório fornecer o locale na URL.
+
+# Para saber mais: testes
+
+Nós mudamos as URLs de nosso sistema nesse vídeo, e vários de nossos testes fazem uso dessas URLs para acessarem a aplicação e realizarem suas verificações.
+
+Mudanças em `/config/packages/security.yaml`
+
+```YAML
+security:
+    # Resto do código
+    access_control:
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: "^/[A-z_]*/series$", roles: PUBLIC_ACCESS }
+        - { path: "^/[A-z_]*/login$", roles: PUBLIC_ACCESS }
+        - { path: "^/[A-z_]*/register$", roles: PUBLIC_ACCESS }
+        # Resto do código
+```
+
+Mudanças no teste `AddButtonTest.php`:
+
+```php
+<?php
+
+namespace App\Tests\E2E;
+
+use App\Repository\UserRepository;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+
+class AddButtonTest extends WebTestCase
+{
+    private $locales = ['en', 'pt_BR'];
+
+    public function testAddButtonDoesNotExistWhenUserIsNotLoggedIn(): void
+    {
+        $client = static::createClient();
+        foreach ($this->locales as $locale) {
+            // A mudança está no teste em vários locales.
+            $crawler = $client->request('GET', '/' . $locale . '/series');
+    
+            $this->assertResponseIsSuccessful();
+            $this->assertSelectorNotExists('.btn.btn-dark.mb-3');
+        }
+    }
+
+    public function testAddButtonNotExistWhenUserIsLoggedIn()
+    {
+        $client = static::createClient();
+        $container = static::getContainer();
+        $userRepository = $container->get(UserRepository::class);
+        $user = $userRepository->findOneBy(['email' => 'email@example.com']);
+        $client->loginUser($user);
+        foreach ($this->locales as $locale) {
+            // A mudança está no teste em vários locales.
+            $crawler = $client->request('GET', '/' . $locale . '/series');
+
+            $this->assertResponseIsSuccessful();
+            $this->assertSelectorExists('.btn.btn-dark.mb-3');
+        }
+    }
+}
+```
