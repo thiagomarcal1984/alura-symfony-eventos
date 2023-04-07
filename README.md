@@ -355,3 +355,35 @@ class AddButtonTest extends WebTestCase
     }
 }
 ```
+# Para saber mais: permissão
+
+Mudanças em `/config/packages/security.yaml`
+
+Após nossas alterações nas URLs, as rotas que antes eram públicas não são mais. Com isso, nosso formulário de login e registro, inclusive, passam a ser inacessíveis.
+
+Para corrigir isso, basta modificar o arquivo `config/packages/security.yaml` para que as rotas públicas sejam corretamente definidas.
+
+```YAML
+security:
+    # Resto do código
+    access_control:
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+
+        # Solução proposta no curso:
+        # - { path: ^/en|pt_BR/series$, roles: PUBLIC_ACCESS }
+        # - { path: ^/en|pt_BR/(?!login|register), roles: ROLE_USER }
+
+        # Minha solução anterior: 
+        # - { path: "^/[A-z_]*/series$", roles: PUBLIC_ACCESS }
+        # - { path: "^/[A-z_]*/login$", roles: PUBLIC_ACCESS }
+        # - { path: "^/[A-z_]*/register$", roles: PUBLIC_ACCESS }
+
+        # Mais uma alternativa: 
+        - { path: "^/[A-z_]*/series$", roles: PUBLIC_ACCESS }
+        - { path: "^/[A-z_]*/(?!login|register)$", roles: ROLE_USER }
+
+        # Código anterior à adaptação:
+        - { path: ^/series$, roles: PUBLIC_ACCESS }
+        - { path: ^/(?!login|register), roles: ROLE_USER }
+# Resto do código
+```
