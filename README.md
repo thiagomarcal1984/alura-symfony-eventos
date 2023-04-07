@@ -256,3 +256,41 @@ EventListeners/EventSubscribers tratam os eventos de forma **síncrona** (o invo
 De preferência, `use o messenger`. Para mudar o tratamento de eventos de síncrono para assíncrono e vice versa, basta modificar o transporte no arquivo `messenger.yaml`. O messenger é um componente mais recente do Symfony, antigamente tínhamos apenas os event listeners/subscribers.
 
 Mas quando é bom usar Event Listeners/Subscribers? Quando o código necessariamente depender da resposta do tratamento do evento (nesse caso, com certeza precisaremos de um código **síncrono**).
+
+# Configurando as traduções
+O arquivo `/config/packages/translation.yaml` contém as configurações para a tradução de conteúdo:
+
+```YAML
+framework:
+    # Padrão: <2 chars para idioma (min)>_<2 chars para país (maiús)>.
+    default_locale: pt_BR # Antes o locale era "en".
+    translator:
+        # Onde fica o diretório com as traduções.
+        default_path: '%kernel.project_dir%/translations'
+    
+    # Resto do código.
+```
+No diretório `/translations` colocamos os arquivos YAML com as mensagens. Esses arquivos seguem o padrão de nomenclatura `<nome_do_arquivo>.<locale>.yaml`:
+
+```YAML
+# /translations/messages.en.yaml
+series.list: Series list
+series.delete: Series deleted successfully
+```
+
+```YAML
+# /translations/messages.pt_BR.yaml
+series.list: Listagem de séries
+series.delete: Série removida com sucesso
+```
+
+Finalmente, devemos configurar o roteamento no Symfony para adicionar o prefixo correspondente ao locale na URL. A configuração fica no arquivo `config/routes.yaml`
+```YAML
+controllers:
+    resource: ../src/Controller/
+    type: attribute
+    # Toda rota vai ser prefixada com o locale definido (pt_BR, en etc).
+    prefix: /{_locale}
+# Resto do código.
+```
+Problema: uma vez que o prefixo é configurado nas rotas, é obrigatório fornecer o locale na URL.

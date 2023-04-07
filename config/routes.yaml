@@ -1,6 +1,8 @@
 controllers:
     resource: ../src/Controller/
     type: attribute
+    # Toda rota vai ser prefixada com o locale definido (pt_BR, en etc).
+    prefix: /{_locale}
 
 app_logout:
     path: /logout
