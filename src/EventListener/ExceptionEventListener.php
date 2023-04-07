@@ -25,6 +25,8 @@ class ExceptionEventListener
             return;
         }
         $request = $event->getRequest();
+        $language = $request->getPreferredLanguage();
+        /*
         $acceptLanguageHeader = $request->headers->get('Accept-Language');
         // Conteúdo do cabeçalho Accept-Language: 
         // pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,it;q=0.6
@@ -38,7 +40,7 @@ class ExceptionEventListener
         // Se o código fosse 
         // $language = explode(';', $languages[1])[0]; // Segundo resultado.
         // Retornaria 'pt', sem o 'q=0.9'.
-
+        */
         if (!str_starts_with($request->getPathInfo(), '/$language')) {
             // Se o path não começa com o idioma que está no header Accept-Language,
             // a resposta redireciona para o path prefixado com o idioma.

@@ -547,3 +547,46 @@ class ExceptionEventListener
     }
 }
 ```
+
+# Para saber mais: getPreferredLanguage
+Tem como obter o idioma sem quebrar tanta string: `$request->getPreferredLanguage()`.
+
+```PHP
+<?php
+
+namespace App\EventListener;
+
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+// Usando o PHP 8, uma das anotações abaixo substituem 
+// as configurações feitas no arquivo services.yaml:
+
+// 1. Usando o evento em 'on' + PascalCase.
+// #[AsEventListener(event: 'kernel.exception')]
+// 2. Usando o método em camelCase
+// #[AsEventListener(method: 'myMethod')]
+// 3. Usando o método mágico __invoke(ExceptionEvent $event)
+#[AsEventListener()]
+class ExceptionEventListener
+{
+    private function __invoke(ExceptionEvent $event): void 
+        $error = $event->getThrowable();
+        if (!$error instanceof NotFoundHttpException) {
+            return;
+        }
+        $request = $event->getRequest();
+
+        $language = $request->getPreferredLanguage();
+
+        if (!str_starts_with($request->getPathInfo(), '/$language')) {
+            $response = new Response(status: 302); // Status para Redirecionamento.
+            $response
+                ->headers
+                ->add(['Location' => "/$language" . $request->getPathInfo()]);
+            $event->setResponse($response);
+        }
+}
+```
