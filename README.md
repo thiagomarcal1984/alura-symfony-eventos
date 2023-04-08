@@ -999,3 +999,50 @@ Monitoramento de logs é um assunto mais voltado para a área de operações do 
 
 - Observabilidade na AWS: utilizando o CloudWatch: https://cursos.alura.com.br/course/observabilidade-aws-utilizando-cloudwatch;
 - Monitoramento: Prometheus, Grafana e Alertmanager: https://cursos.alura.com.br/course/monitoramento-prometheus-grafana-alertmanager.
+
+# Lidando com arquivos
+
+Documentação do Symfony sobre o componente de sistema de arquivos: https://symfony.com/doc/current/components/filesystem.html
+
+O Symfony conta com um componente de Sistema de Arquivos (`Filesystem`), que contém duas classes principais: `Filesystem` (para realizar diversas operações em arquivos e diretórios - adicionar, excluir, alterar permissões, copiar, checar existência etc. - independente da plataforma em que a aplicação roda) e `Path` (para modificar o caminho dos arquivos, tratando as preocupações de diferença de plataformas e caminhos absolutos/relativos).
+
+Vamos substituir a função `unlink` pelo método `remove` da classe `Filesystem` no manipulador de mensagens `DeleteSeriesImageHandler`. O path será criado a partir do método estático `Path::join`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\MessageHandler;
+
+use App\Message\SeriesWasDeleted;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Path;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+
+#[AsMessageHandler]
+class DeleteSeriesImageHandler
+{
+    public function __construct(
+        private ParameterBagInterface $parameterBag,
+        private Filesystem $filesystem,
+    ) {}
+
+    public function __invoke(SeriesWasDeleted $message)
+    {
+        $coverImagePath = $message->series->getCoverImagePath();
+        // O método remove pode receber um array de strings para remover
+        // vários arquivos de uma vez.
+        $this->filesystem->remove(
+            [ // Início do array de paths para remoção.
+                Path::join( // Método estático "join" da classe Path.
+                    $this->parameterBag->get('cover_image_directory'),
+                    DIRECTORY_SEPARATOR,
+                    $coverImagePath
+                )
+            ] // Fim do array de paths para remoção.
+        );
+    }
+}
+```
