@@ -2,13 +2,16 @@ monolog:
     channels:
         - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
 
+# Note que, dependendo do ambiente, segmentamos os handlers de cada canal de maneiras diferentes.
 when@dev:
     monolog:
         handlers:
+            # Canal main escreve em arquivo.
             main:
                 type: stream
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
+                # O canal event está excluído, ele não gera log no handler main.
                 channels: ["!event"]
             # uncomment to get logging in your browser
             # you may have to allow bigger header sizes in your Web server configuration
@@ -18,9 +21,11 @@ when@dev:
             #chromephp:
             #    type: chromephp
             #    level: info
+            # Canal console escreve em tela.
             console:
                 type: console
                 process_psr_3_messages: false
+                # No handler console, os canais event, doctrine e console estão excluídos.
                 channels: ["!event", "!doctrine", "!console"]
 
 when@test:

@@ -860,3 +860,46 @@ class EpisodesController extends AbstractController
 >     // Resto do código
 > }
 > ```
+
+# Conhecendo o Monolog
+O Monolog é uma biblioteca para trabalhar com logs, que vem nativo no Symfony. Ela já existia antes da PSR-3.
+
+O Monolog também acrescenta mais um nível de criticidade aos existentes na PSR-3: o `ALERT` (550), que fica entre os níveis `CRITICAL` (500) e `EMERGENCY` (600).
+
+Um conceito usado pelo Monolog é o de canais: os canais são os componentes "geradores de log" (por exemplo: app, doctrine, security, request etc.). Cada canal pode empilhar (sim, empilhar) um ou mais handlers que vão registrar efetivamente os logs em arquivos, banco de dados, e-mail etc.
+
+Cada handler pode ter um formatador diferente (exibir algo diferente de `[Data-Hora] canal.severidade: mensagem [contexto] [conteúdo-extra]`).
+
+A configuração do Monolog fica no arquivo `config\packages\monolog.yaml`:
+
+```YAML
+monolog:
+    channels:
+        # Deprecations are logged in the dedicated 
+        # "deprecation" channel when it exists
+        - deprecation 
+
+# Note que, dependendo do ambiente, segmentamos os handlers 
+# de cada canal de maneiras diferentes.
+when@dev:
+    monolog:
+        handlers:
+            # Canal main escreve em arquivo.
+            main:
+                type: stream # Arquivo.
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+                # O canal event está excluído, ele não gera 
+                # log no handler main.
+                channels: ["!event"]
+            # Canal console escreve em tela.
+            console:
+                type: console #Tela.
+                process_psr_3_messages: false
+                # No handler console, os canais event, 
+                # doctrine e console estão excluídos.
+                channels: ["!event", "!doctrine", "!console"]
+
+when@test:
+    # Resto do código.
+```
