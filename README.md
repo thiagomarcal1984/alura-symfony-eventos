@@ -903,3 +903,90 @@ when@dev:
 when@test:
     # Resto do código.
 ```
+
+# Configurando monolog no Symfony
+
+Veja o conteúdo do arquivo `config/packages/monolog.yaml`:
+```YAML
+monolog:
+    channels:
+        - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
+
+# Note que, dependendo do ambiente, segmentamos os handlers de cada canal de maneiras diferentes.
+when@dev:
+    monolog:
+        handlers:
+            # Agora o canal main delega seus logs para outro handler/canal.
+            # Tudo copiado do canal do ambiente de testes. Compare com os 
+            # handlers "main" e "nested" no ambiente de testes.
+            main:
+                # O canal do tipo fingers crossed acumula os logs em memória
+                # até que um determinado action level (severidade) dispare
+                # a chamada dos handlers (no caso, o level warning).
+                type: fingers_crossed
+                # Action level anda os handlers deste canal processar todos 
+                # os logs gerados até o disparo de uma mensagem "warning".
+                action_level: warning 
+                excluded_http_codes: [404] # Erros 404 não vão pro log.
+                # O canal "event" está excluído, ele não gera log no handler main.
+                channels: ["!event"]
+                # O canal main define como handler um outro canal: o file.
+                handler: file
+            # Canal file escreve em arquivo.
+            file:
+                type: stream
+                # O nome do arquivo no ambiente de desenvolvimento seria:
+                # /var/log/dev-meu.log .
+                path: "%kernel.logs_dir%/%kernel.environment%-meu.log"
+            # uncomment to get logging in your browser
+            # you may have to allow bigger header sizes in your Web server configuration
+            #firephp:
+            #    type: firephp
+            #    level: info
+            #chromephp:
+            #    type: chromephp
+            #    level: info
+            # Canal console escreve em tela.
+            console:
+                type: console
+                process_psr_3_messages: false
+                # No handler console, os canais event, doctrine e console estão excluídos.
+                channels: ["!event", "!doctrine", "!console"]
+
+when@test:
+    monolog:
+        handlers:
+            main:
+                type: fingers_crossed
+                action_level: error
+                handler: nested
+                excluded_http_codes: [404, 405]
+                channels: ["!event"]
+            nested:
+                type: stream
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+
+when@prod:
+    monolog:
+        handlers:
+            main:
+                type: fingers_crossed
+                action_level: error
+                handler: nested
+                excluded_http_codes: [404, 405]
+                buffer_size: 50 # How many messages should be saved? Prevent memory leaks
+            nested:
+                type: stream
+                path: php://stderr
+                level: debug
+                formatter: monolog.formatter.json
+            console:
+                type: console
+                process_psr_3_messages: false
+                channels: ["!event", "!doctrine"]
+            deprecation:
+                type: stream
+                channels: [deprecation]
+                path: php://stderr
+```

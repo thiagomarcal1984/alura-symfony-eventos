@@ -6,13 +6,28 @@ monolog:
 when@dev:
     monolog:
         handlers:
-            # Canal main escreve em arquivo.
+            # Agora o canal main delega seus logs para outro handler/canal.
+            # Tudo copiado do canal do ambiente de testes. Compare com os 
+            # handlers "main" e "nested" no ambiente de testes.
             main:
-                type: stream
-                path: "%kernel.logs_dir%/%kernel.environment%.log"
-                level: debug
-                # O canal event está excluído, ele não gera log no handler main.
+                # O canal do tipo fingers crossed acumula os logs em memória
+                # até que um determinado action level (severidade) dispare
+                # a chamada dos handlers (no caso, o level warning).
+                type: fingers_crossed
+                # Action level anda os handlers deste canal processar todos 
+                # os logs gerados até o disparo de uma mensagem "warning".
+                action_level: warning 
+                excluded_http_codes: [404] # Erros 404 não vão pro log.
+                # O canal "event" está excluído, ele não gera log no handler main.
                 channels: ["!event"]
+                # O canal main define como handler um outro canal: o file.
+                handler: file
+            # Canal file escreve em arquivo.
+            file:
+                type: stream
+                # O nome do arquivo no ambiente de desenvolvimento seria:
+                # /var/log/dev-meu.log .
+                path: "%kernel.logs_dir%/%kernel.environment%-meu.log"
             # uncomment to get logging in your browser
             # you may have to allow bigger header sizes in your Web server configuration
             #firephp:
