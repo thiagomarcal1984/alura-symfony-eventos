@@ -84,7 +84,8 @@ class SeriesController extends AbstractController
 
         $this->addFlash(
             'success',
-            "Série \"{$series->getName()}\" adicionada com sucesso"
+            $this->translator->trans('series.insert', ['nome' => $seriesForm->getData()->seriesName])
+            // "Série \"{$series->getName()}\" adicionada com sucesso"
         );
 
         return $this->redirectToRoute('app_series');
@@ -99,7 +100,10 @@ class SeriesController extends AbstractController
     {
         $this->seriesRepository->remove($series, true);
         $this->messenger->dispatch(new SeriesWasDeleted($series));
-        $this->addFlash('success', $this->translator->trans('series.delete'));
+        $this->addFlash(
+            'success',
+            $this->translator->trans('series.delete', ['nome' => $series->getName()])
+        );
 
         return $this->redirectToRoute('app_series');
     }
@@ -121,7 +125,11 @@ class SeriesController extends AbstractController
             return $this->renderForm('series/form.html.twig', compact('seriesForm', 'series'));
         }
 
-        $this->addFlash('success', "Série \"{$series->getName()}\" editada com sucesso");
+        $this->addFlash(
+            'success',
+            $this->translator->trans('series.update', ['nome' => $seriesForm->getData()->seriesName])
+            // "Série \"{$series->getName()}\" editada com sucesso"
+        );
         $this->entityManager->flush();
 
         return $this->redirectToRoute('app_series');

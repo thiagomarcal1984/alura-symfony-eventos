@@ -607,3 +607,116 @@ Alteração em `/templates/series/index.html.twig`:
 {# Resto do código#}
 ```
 Perceba que `series.list` é uma string, não um objeto. A string é enviada por parâmetro à função `trans` no Twig.
+
+# Para saber mais: traduções com parâmetros
+
+Documentação: https://symfony.com/doc/6.1/translation/message_format.html 
+
+Passos:
+1. Ative a extensão `intl` no `php.ini` (remova o comentário em `extension=intl`);
+2. Crie os arquivos com as mensagens com o padrão `message+intl-icu.<idioma>.yaml`. Os nomes dos parâmetros dentro dos arquivos YAML são envolvidos por chaves {};
+3. Use o método `$translator->trans('nome da entrada no arquivo das mensagens', $arrayKeyValue)` no código PHP ou a função trans `{{ 'mensagem.message_key' | trans({'key': valor}) }}` no códgio do Twig.
+
+> A versão 6.2 do Symfony não tem mais o formato de mensagem ICU (International Components for Unicode).
+
+## Anotações do curso
+No exemplo da mensagem de nova série, o arquivo de tradução (que deve ser renomeado para `messages+intl-icu.pt_BR.yaml`) teria a seguinte linha:
+```YAML
+series.added.msg: Série {name} adicionada com sucesso
+```
+
+E para usarmos a tradução em nosso código PHP, faríamos:
+
+```php
+$this->translator->trans('series.added.msg', ['name' => $series->getName()])
+```
+Já no Twig, faríamos:
+```BASH
+{{ 'series.added.msg'|trans({'name': series.name}) }}
+```
+## Meu código
+
+1. Ativar a extensão `intl` no arquivo `php.ini`:
+```
+; extension=intl ; remova o ponto e vírgula para descomentar.
+extension=intl
+```
+
+2. Crie os arquivos de mensagem com o sufixo `+intl-icu`:
+```YAML
+# translations\messages+intl-icu.pt_BR.yaml
+series.list: Listagem de séries
+series.insert: Série "{nome}" inserida com sucesso
+series.update: Série "{nome}" atualizada com sucesso
+series.delete: Série removida com sucesso
+
+# translations\messages+intl-icu.en.yaml
+series.list: Series list
+series.insert: Series "{nome}" inserted successfully
+series.update: Series "{nome}" updated successfully
+series.delete: Series deleted successfully
+```
+
+3. Adaptação dos métodos CRUD em `SeriesController`:
+```PHP
+// Resto do código
+class SeriesController extends AbstractController
+{
+    // Resto do código
+    #[Route('/series/create', name: 'app_add_series', methods: ['POST'])]
+    public function addSeries(Request $request): Response
+    {
+        // Resto do código
+        $this->addFlash(
+            'success',
+            $this->translator->trans(
+                'series.insert', 
+                ['nome' => $seriesForm->getData()->seriesName]
+            )
+        );
+
+        return $this->redirectToRoute('app_series');
+    }
+
+    // Resto do código
+    #[Route('/series/delete/{series}',name: 'app_delete_series',methods: ['DELETE'])]
+    public function deleteSeries(Series $series): Response
+    {
+        // Resto do código
+        $this->addFlash(
+            'success',
+            $this->translator->trans(
+                'series.delete', 
+                ['nome' => $series->getName()]
+            )
+        );
+
+        return $this->redirectToRoute('app_series');
+    }
+
+    // Resto do código
+    #[Route('/series/edit/{series}', name: 'app_store_series_changes', methods: ['PATCH'])]
+    public function storeSeriesChanges(Series $series, Request $request): Response
+    {
+        // Resto do código
+        $this->addFlash(
+            'success',
+            $this->translator->trans(
+                'series.update', 
+                ['nome' => $seriesForm->getData()->seriesName]
+            )
+        );
+
+        return $this->redirectToRoute('app_series');
+    }
+
+    // Resto do código
+}
+```
+
+4. Uso do pipe `trans` no Twig (na verdade não foi necessário no código):
+```BASH
+{% block content%}
+    {{ 'message.message_key' | trans({'key': value}) }}
+{% endblock %}
+```
