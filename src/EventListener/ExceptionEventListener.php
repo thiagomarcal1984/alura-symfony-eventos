@@ -3,6 +3,7 @@
 namespace App\EventListener;
 
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -18,6 +19,18 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 // #[AsEventListener()]
 class ExceptionEventListener
 {
+    public function startsWithValidLanguage(Request $request): bool
+    {
+        $validLanguages = ['en', 'pt_BR'];
+        foreach ($validLanguages as $language) {
+            if (str_starts_with($request->getPathInfo(), "/$language")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
     private function ouvir(string $origem, $event): void 
     {
         $error = $event->getThrowable();
@@ -41,7 +54,7 @@ class ExceptionEventListener
         // $language = explode(';', $languages[1])[0]; // Segundo resultado.
         // Retornaria 'pt', sem o 'q=0.9'.
         */
-        if (!str_starts_with($request->getPathInfo(), '/$language')) {
+        if (!$this->startsWithValidLanguage($request)) {
             // Se o path não começa com o idioma que está no header Accept-Language,
             // a resposta redireciona para o path prefixado com o idioma.
             $response = new Response(status: 302); // Status para Redirecionamento.

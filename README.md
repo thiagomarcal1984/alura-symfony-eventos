@@ -720,3 +720,76 @@ class SeriesController extends AbstractController
     {{ 'message.message_key' | trans({'key': value}) }}
 {% endblock %}
 ```
+
+# Para saber mais: problema
+Se você tentar acessar a URL `/en/teste` em nosso sistema, vai perceber que estamos redirecionando o usuário para: `/pt_BR/en/teste`. Isso porque a URL não começa com nosso idioma, mas sim com um idioma válido em nosso sistema.
+
+Para melhorar essa verificação e prevenir que esse erro ocorra, você pode verificar se a URL começa com qualquer um dos idiomas válidos. Algo como:
+
+```php
+public function startsWithValidLanguage(Request $request): bool
+{
+    $validLanguages = ['en', 'pt_BR'];
+    foreach ($validLanguages as $language) {
+        if (str_starts_with($request->getPathInfo(), "/$language")) {
+            return true;
+        }
+    }
+
+    return false;
+}
+```
+E ao invés de chamar `!str_starts_with($request->getPathInfo(), "/$language")` você chamaria `!$this->startsWithValidLanguage($request)`.
+
+Para tornar esse código ainda mais flexível, você pode extrair os idiomas válidos para um parâmetro em `services.yaml`.
+
+Inclusive, essa lista de idiomas válidos pode (e deve) ser usada para definir uma validação em nosso arquivo de rotas. Isso pode ser feito através do parâmetro requirements de nossa configuração de rota. Algo como:
+
+```YAML
+# config/routes.yaml
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+    prefix: /{_locale}
+    requirements:
+        _locale: en|pt_BR
+```
+
+Meu código:
+```php
+#[AsEventListener(method: 'myMethod')]
+class ExceptionEventListener
+{
+    public function startsWithValidLanguage(Request $request): bool
+    {
+        $validLanguages = ['en', 'pt_BR'];
+        foreach ($validLanguages as $language) {
+            if (str_starts_with($request->getPathInfo(), "/$language")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    private function myMethod(ExceptionListener $event): void 
+    {
+        $error = $event->getThrowable();
+        if (!$error instanceof NotFoundHttpException) {
+            return;
+        }
+        $request = $event->getRequest();
+        $language = $request->getPreferredLanguage();
+
+        if (!$this->startsWithValidLanguage($request)) {
+            $response = new Response(status: 302);
+            $response
+                ->headers
+                ->add(['Location' => "/$language" . $request->getPathInfo()]);
+            $event->setResponse($response);
+        }
+    }
+}
+```
