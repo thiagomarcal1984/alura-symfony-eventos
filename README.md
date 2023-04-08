@@ -798,3 +798,65 @@ class ExceptionEventListener
 Logs são entradas (geralmente me um arquivo de texto) que servem de material para diagnosticar a saúde do sistema. Eles são nivelados em severidades. A PSR-3 descreve 8 níveis (do mais grave ao menos grave): EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFO, e DEBUG. 
 
 > Este commit altera o parâmetro `nome` nos arquivos `SeriesController`, `translations\messages+intl-icu.pt_BR.yaml` e `translations\messages+intl-icu.en.yaml`. As mudanças nesses arquivos são de pouca importância. Os arquivos anteriores de mensagem (`translations\messages.pt_BR.yaml` e `translations\messages.en.yaml`) não são mais necessários .
+
+# Symphony Logger
+Os logs gerados pelo Symfony tem o seguinte padrão: `[data e hora] gerador_do_log.severidade: Mensagem`. O gerador dos logs da aplicação se chama `app`:
+```BASH
+[2023-04-08T16:14:12.508287+00:00] security.DEBUG: Authenticator does not support the request. {"firewall_name":"main","authenticator":"Symfony\\Component\\Security\\Http\\Authenticator\\FormLoginAuthenticator"} []
+[2023-04-08T16:14:12.528611+00:00] doctrine.DEBUG: Executing statement: SELECT t0.id AS id_1, t0.number AS number_2, t0.series_id AS series_id_3 FROM season t0 WHERE t0.id = ? (parameters: array{"1":"2"}, types: array{"1":1}) {"sql":"SELECT t0.id AS id_1, t0.number AS number_2, t0.series_id AS series_id_3 FROM season t0 WHERE t0.id = ?","params":{"1":"2"},"types":{"1":1}} []
+[2023-04-08T16:14:12.542010+00:00] app.INFO: Mais de dois episódios marcados como assistidos. [] []
+[2023-04-08T16:14:12.542373+00:00] doctrine.DEBUG: Executing statement: SELECT t0.id AS id_1, t0.watched AS watched_2, t0.number AS number_3, t0.season_id AS season_id_4 FROM episode t0 WHERE t0.season_id = ? (parameters: array{"1":2}, types: array{"1":1}) {"sql":"SELECT t0.id AS id_1, t0.watched AS watched_2, t0.number AS number_3, t0.season_id AS season_id_4 FROM episode t0 WHERE t0.season_id = ?","params":{"1":2},"types":{"1":1}} []
+[2023-04-08T16:14:12.549902+00:00] php.DEBUG: User Warning: Configure the "curl.cainfo", "openssl.cafile" or "openssl.capath" php.ini setting to enable the CurlHttpClient {"exception":{"Symfony\\Component\\ErrorHandler\\Exception\\SilencedErrorContext":{"severity":512,"file":"D:\\alura\\symfony-eventos\\vendor\\symfony\\http-client\\HttpClient.php","line":57,"trace":[{"file":"D:\\alura\\symfony-eventos\\var\\cache\\dev\\ContainerWgKDnMv\\App_KernelDevDebugContainer.php","line":1071,"function":"create","class":"Symfony\\Component\\HttpClient\\HttpClient","type":"::"}],"count":1}}} []
+```
+Perceba que há dois pares de colchetes no fim do log. Eles correspondem a `contexto` e `parâmetros`.
+
+
+```BASH
+[2023-04-08T16:25:51.324554+00:00] security.DEBUG: Authenticator does not support the request. {"firewall_name":"main","authenticator":"Symfony\\Component\\Security\\Http\\Authenticator\\FormLoginAuthenticator"} []
+[2023-04-08T16:25:51.346807+00:00] doctrine.DEBUG: Executing statement: SELECT t0.id AS id_1, t0.number AS number_2, t0.series_id AS series_id_3 FROM season t0 WHERE t0.id = ? (parameters: array{"1":"3"}, types: array{"1":1}) {"sql":"SELECT t0.id AS id_1, t0.number AS number_2, t0.series_id AS series_id_3 FROM season t0 WHERE t0.id = ?","params":{"1":"3"},"types":{"1":1}} []
+[2023-04-08T16:25:51.363170+00:00] app.INFO: Mais de dois episódios marcados como assistidos. {"numeros_episodios":4} []
+```
+
+Código em `EpisodesController` para escrever no log:
+```php
+// Resto do código
+use Psr\Log\LoggerInterface;
+
+class EpisodesController extends AbstractController
+{
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private LoggerInterface $logger,
+    ) {}
+    // Resto do código
+    
+    #[Route('/season/{season}/episodes', name: 'app_watch_episodes', methods: ['POST'])]
+    public function watch(Season $season, Request $request): Response
+    {
+        $watchedEpisodes = array_keys($request->request->all('episodes'));
+        if (count($watchedEpisodes) > 2) {
+            $this->logger->info(
+                message: "Mais de dois episódios marcados como assistidos.", 
+                context: ['numeros_episodios' => count($watchedEpisodes)]
+            );
+        }
+        // Resto do código
+    }
+
+    // Resto do código
+}
+```
+> O arquivo `ExemploEventSubscriber` precisou de uma mudança na assinatura do método `getSubscribedEvents()`. O profiles do Symfony recomendou que o método deve retornar um array: 
+> ```php
+> // Resto do código
+> class ExemploEventSubscriber implements EventSubscriberInterface
+> // Use esta interface: Symfony\Component\EventDispatcher\EventSubscriberInterface;
+> // Não esta: Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+> {
+>     public static function getSubscribedEvents(): array
+>     {
+>         // Resto do código
+>     }
+>     // Resto do código
+> }
+> ```
