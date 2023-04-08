@@ -990,3 +990,12 @@ when@prod:
                 channels: [deprecation]
                 path: php://stderr
 ```
+
+# Para saber mais: monitoramento
+
+Apenas adicionar registros em nossos sistemas de logs não é suficiente. Precisamos desenvolver estratégias de monitoramento de logs. Dessa forma podemos saber se nossa aplicação está saudável e até extrair métricas a partir dessas informações.
+
+Monitoramento de logs é um assunto mais voltado para a área de operações do que programação e aqui na Alura há cursos sobre o assunto. Aqui estão alguns diferentes exemplos:
+
+- Observabilidade na AWS: utilizando o CloudWatch: https://cursos.alura.com.br/course/observabilidade-aws-utilizando-cloudwatch;
+- Monitoramento: Prometheus, Grafana e Alertmanager: https://cursos.alura.com.br/course/monitoramento-prometheus-grafana-alertmanager.
