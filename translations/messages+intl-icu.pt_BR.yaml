@@ -1,4 +1,4 @@
 series.list: Listagem de séries
-series.insert: Série "{nome}" inserida com sucesso
-series.update: Série "{nome}" atualizada com sucesso
+series.added.msg: Série "{name}" inserida com sucesso
+series.update: Série "{name}" atualizada com sucesso
 series.delete: Série removida com sucesso

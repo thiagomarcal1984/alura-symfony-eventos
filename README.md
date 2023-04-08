@@ -793,3 +793,8 @@ class ExceptionEventListener
     }
 }
 ```
+
+# Importância de logs
+Logs são entradas (geralmente me um arquivo de texto) que servem de material para diagnosticar a saúde do sistema. Eles são nivelados em severidades. A PSR-3 descreve 8 níveis (do mais grave ao menos grave): EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFO, e DEBUG. 
+
+> Este commit altera o parâmetro `nome` nos arquivos `SeriesController`, `translations\messages+intl-icu.pt_BR.yaml` e `translations\messages+intl-icu.en.yaml`. As mudanças nesses arquivos são de pouca importância. Os arquivos anteriores de mensagem (`translations\messages.pt_BR.yaml` e `translations\messages.en.yaml`) não são mais necessários .

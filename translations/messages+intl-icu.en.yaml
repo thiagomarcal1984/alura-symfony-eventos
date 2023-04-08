@@ -1,4 +1,4 @@
 series.list: Series list
-series.insert: Series "{nome}" inserted successfully
-series.update: Series "{nome}" updated successfully
+series.added.msg: Series "{name}" inserted successfully
+series.update: Series "{name}" updated successfully
 series.delete: Series deleted successfully
