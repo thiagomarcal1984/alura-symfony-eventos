@@ -1114,3 +1114,10 @@ Leia sobre UID/UUID na documentação: https://symfony.com/doc/current/component
 O componente `Uid` do Symfony provê classes para criar UUIDs. 
 
 UUIDs (Universally Unique Identifiers) são um dos UIDs mais populares na indústria de software. UUIDs são números de 128 bits geralmente representados como 5 grupos de caracteres hexadecimais: xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx (o dígito M é a versão do UUID version e o dígito N é a variante de UUID ).
+
+# Dumper
+Alguns códigos para facilitar a inspeção de variáveis dentro do Symfony:
+
+1. A função `dd($variavel)`. Ela significa `dump & die`. A desvantagem é que o browser renderiza a página, apenas mostra o conteúdo da variável de um jeito mais amigável.
+2. A função `dump($variavel)`. Ela exibe um "alvo" no profiler que facilita a visualização do conteúdo da variável.
+3. O comando `php .\bin\console server:dump`. Ele é útil em contextos de desenvolvimento de APIs, porque elas não contém o profiler do Symfony. Sempre que a função `dump($variavel)` for chamada na API, o comando do Symfony exibe o conteúdo da variável no console de uma maneira mais amigável.
