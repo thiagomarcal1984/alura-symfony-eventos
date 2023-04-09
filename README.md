@@ -1046,3 +1046,71 @@ class DeleteSeriesImageHandler
     }
 }
 ```
+# Strings
+Leia a documentação: https://symfony.com/doc/current/components/string.html
+
+O componente `String` do Symfony possui várias classes/objetos para facilitar o trabalho com strings.
+
+Há 3 tipos de string e as respectivas classes do namespace `Symfony\Component\String`: 
+1. binárias (`ByteString`), 
+2. unicode (`UnicodeString`), e
+3. as formadas por codepoints (`CodePointString`).
+
+Grafemas e code points: Code points são unidades de informação atômicas, que podem ser combinadas para formar um grafema. Exemplo: os code points "a" e "`" formam o grafema "à".
+
+## Sluggers
+O componente de strings do Symfony possui os chamados sluggers, objetos que convertem textos para o encoding ASCII (ou outro encoding portável). Isso é vantajoso porque garante que nomes de arquivo sejam corretamente atribuídos pela aplicação.
+
+A classe `SeriesController` usou um slugger injetado pelo seu construtor para dar nomes aos arquivos depois que eles são subidos para o servidor, antes de salvar seus nomes no banco de dados. Veja o método `addSeries` do controller:
+
+```php
+<?php
+// Resto dos imports
+use Symfony\Component\String\Slugger\SluggerInterface;
+
+class SeriesController extends AbstractController
+{
+    public function __construct(
+        private SluggerInterface $slugger,
+        // Resto das injeções
+    ) {}
+    // Resto do código 
+    #[Route('/series/create', name: 'app_add_series', methods: ['POST'])]
+    public function addSeries(Request $request): Response
+    {
+        $input = new SeriesCreationInputDTO();
+        $seriesForm = $this->createForm(SeriesType::class, $input)
+            ->handleRequest($request);
+
+        /** @var UploadedFile $uploadedCoverImage */
+        $uploadedCoverImage = $seriesForm->get('coverImage')->getData();
+
+        if ($uploadedCoverImage) {
+            $originalFilename = pathinfo(
+                $uploadedCoverImage->getClientOriginalName(),
+                PATHINFO_FILENAME
+            );
+
+            // this is needed to safely include the file name as part of the URL
+            $safeFilename = $this->slugger->slug($originalFilename);
+            $newFilename = $safeFilename . '-' . uniqid() . '.' . $uploadedCoverImage->guessExtension();
+
+            $uploadedCoverImage->move(
+                $this->getParameter('cover_image_directory'),
+                $newFilename
+            );
+            $input->coverImage = $newFilename;
+        }
+        // Resto do código
+    }
+    // Resto do código
+}
+```
+
+## Unique Identifiers (UID) e Universally Unique Identifieres (UUID)
+
+Leia sobre UID/UUID na documentação: https://symfony.com/doc/current/components/uid.html
+
+O componente `Uid` do Symfony provê classes para criar UUIDs. 
+
+UUIDs (Universally Unique Identifiers) são um dos UIDs mais populares na indústria de software. UUIDs são números de 128 bits geralmente representados como 5 grupos de caracteres hexadecimais: xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx (o dígito M é a versão do UUID version e o dígito N é a variante de UUID ).
