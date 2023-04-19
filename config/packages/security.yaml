@@ -52,8 +52,8 @@ security:
         - { path: "^/[A-z_]*/(?!login|register)$", roles: ROLE_USER }
 
         # Código anterior à adaptação:
-        - { path: ^/series$, roles: PUBLIC_ACCESS }
-        - { path: ^/(?!login|register), roles: ROLE_USER }
+        # - { path: ^/series$, roles: PUBLIC_ACCESS }
+        # - { path: ^/(?!login|register), roles: ROLE_USER }
 
 when@test:
     security:

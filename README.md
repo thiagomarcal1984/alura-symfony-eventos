@@ -1121,3 +1121,69 @@ Alguns códigos para facilitar a inspeção de variáveis dentro do Symfony:
 1. A função `dd($variavel)`. Ela significa `dump & die`. A desvantagem é que o browser renderiza a página, apenas mostra o conteúdo da variável de um jeito mais amigável.
 2. A função `dump($variavel)`. Ela exibe um "alvo" no profiler que facilita a visualização do conteúdo da variável.
 3. O comando `php .\bin\console server:dump`. Ele é útil em contextos de desenvolvimento de APIs, porque elas não contém o profiler do Symfony. Sempre que a função `dump($variavel)` for chamada na API, o comando do Symfony exibe o conteúdo da variável no console de uma maneira mais amigável.
+
+# Passo a passo em produção
+Leia a documentação: https://symfony.com/doc/current/deployment.html
+
+## 1. Cheque os requisitos
+
+Instalação do componente que verifica a compatibilidade da aplicação com o ambiente de produção: 
+```
+composer require symfony/requirements-checker
+```
+
+Execução do comando para verificar compatibilidade da aplicação com o ambiente de produção:
+```
+symfony check:requirements
+```
+## 2. Configure as variáveis de ambiente.
+
+Em produção, essas variáveis podem ser definidas mediante configurações do Docker, Nginx ou de outras formas fornecidas pelo provedor. Essas configurações diretas podem ser geradas em PHP com o comando abaixo do composer (o valor `prod` é o ambiente), que vai gerar o arquivo `.env.local.php`:
+```
+composer dump-env prod
+```
+
+Se você quiser usar apenas as variáveis de ambiente ao invés de depender do arquivo `.env.local.php`, forneça o parâmetro `--empty` ao comando:
+```
+composer dump-env prod --empty
+```
+
+Se preferir, você pode substituir essas configurações diretas por um arquivo `.env.local`.
+
+Conteúdo do arquivo `.env`:
+```bash
+###> symfony/framework-bundle ###
+# APP_ENV=dev
+APP_ENV=prod
+# Mude a variável APP_SECRET com alguma frequência, para aumentar a segurança.
+APP_SECRET=b12ecb59d552048d8428e6c793fbfeb4
+###< symfony/framework-bundle ###
+```
+
+Leia mais na documentação.
+
+## 3. Instale/Atualize os vendors
+Instalar/atualizar os vendors sem as dependências de desenvolvimento (`--no-dev`) e otimizando o autoloader (`--optimize-autoloader`):
+```
+composer install --no-dev --optimize-autoloader
+```
+
+Ou com o parâmetro `--classmap-authoritative` para carregar as classes somente a partir do mapeamento das classes. Esse parâmetro implicitamente chama o `--optimize-autoloader`:
+```
+composer install --no-dev --classmap-authoritative
+```
+## 4. Limpe o cache do Symfony
+Comandos para limpar e aquecer o cache do Symfony:
+```
+php bin/console cache:clear
+php bin/console cache:warmup
+```
+
+## 5. Outras coisas pra fazer em produção
+* Rodar as migrações de bancos de dados;
+* Limpar a APCu Cache;
+* Adicionar/editar CRON jobs;
+* Reiniciar os workers (por exemplo, o consumidor de mensagens);
+* Construir e minificar os ativos do Webpack Encore (CSS/JavaScript);
+* Enviar ativos para uma CDN (Content Delivery Network);
+* etc.
