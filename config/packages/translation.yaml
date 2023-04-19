@@ -1,6 +1,7 @@
 framework:
     # Padrão: <2 chars para idioma (min)>_<2 chars para país (maiús)>.
     default_locale: pt_BR 
+    enabled_locales: ['pt_BR', 'en']
     translator:
         # Onde fica o diretório com as traduções.
         default_path: '%kernel.project_dir%/translations'

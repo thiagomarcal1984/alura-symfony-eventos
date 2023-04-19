@@ -1187,3 +1187,39 @@ php bin/console cache:warmup
 * Construir e minificar os ativos do Webpack Encore (CSS/JavaScript);
 * Enviar ativos para uma CDN (Content Delivery Network);
 * etc.
+
+# Considerações de performance
+Leia a documentação: https://symfony.com/doc/current/performance.html
+
+## Limitar o número de locales 
+Limite o número de locales de i18n que podem ser carregados pelo Symfony. Para isso, edite o arquivo `translation.yaml`:
+
+```YAML
+framework:
+    default_locale: pt_BR 
+    enabled_locales: ['pt_BR', 'en']
+    # Resto do código.
+```
+
+## Compilar o container de serviços em um único arquivo
+Por padrão, o Symfony compila o container de serviços em vários arquivos separados. Para unificar os arquivos do container, edite o arquivo `services.yaml`:
+```YAML
+parameters:
+    container.dumper.inline_factories: true
+    # Resto do código.
+```
+## Usar o pré-carregamento de classes do OPCache.
+Para isso, edite o arquivo `php.ini`, referenciando o arquivo `/config/preload.php` e o usuário no SO (no caso, www-data):
+```bash
+opcache.preload=/path/do/projeto/config/preload.php
+; Necessário para o opcache.preload
+opcache.preload_user=www-data
+```
+
+## Não checar mudanças nos arquivos PHP
+O OPCache por padrão checa, por meio da comparação do timestamp, se os arquivos cacheados foram modificados. Em produção, a ideia é que os arquivos PHP não mudem. Assim, somente os bytecodes são usados, o que aumenta a performance da aplicação.
+
+Para evitar essa checagem do timestamp dos arquivos .php, desligue o parâmetro `opcache.validate_timestamps` no arquivo php.ini:
+```bash
+opcache.validate_timestamps=0
+```
