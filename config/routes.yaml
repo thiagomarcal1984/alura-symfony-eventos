@@ -1,5 +1,7 @@
 controllers:
-    resource: ../src/Controller/
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
     type: attribute
     # Toda rota vai ser prefixada com o locale definido (pt_BR, en etc).
     prefix: /{_locale}

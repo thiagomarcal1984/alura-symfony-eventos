@@ -1223,3 +1223,41 @@ Para evitar essa checagem do timestamp dos arquivos .php, desligue o parâmetro 
 ```bash
 opcache.validate_timestamps=0
 ```
+
+# Bônus - Atualizando Symphony
+Leia na documentação: 
+Upgrading a Patch Version (e.g. 6.0.0 to 6.0.1): https://symfony.com/doc/current/setup/upgrade_patch.html
+Upgrading a Minor Version (e.g. 5.0.0 to 5.1.0): https://symfony.com/doc/current/setup/upgrade_minor.html
+Upgrading a Major Version (e.g. 5.4.0 to 6.0.0): https://symfony.com/doc/current/setup/upgrade_major.html
+
+## Patch Version
+Para atualizar, basta rodar `composer update`.
+
+## Minor Version 
+Basta atualizar a minor version no `composer.json` (tudo que estava na versão 6.1.* no arquivo é substituído por 6.2.*) e rodar o comando `composer update`.
+
+A dependência `sensio/framework-extra-bundle` no `composer.json` pode ser removida ao usar a versão 6.2 do Symfony. Remova antes de atualizar o composer.
+
+Uma forma de atualizar apenas as dependências que comecem com `symfony/`, e forçar a atualização de todas as dependências, use o seguinte comando no composer:
+```
+composer update "symfony/*" --with-all-dependencies
+```
+
+Pode ser necessário atualizar as receitas do Symfony depois do upgrade de uma minor version. Execute o comando `composer recipes:update` quantas vezes forem necessárias para atualizar cada receita (compare o conteúdo dos arquivos modificados pela atualização da receita):
+```
+composer recipes:update
+
+Which outdated recipe would you like to update? (default: 0)
+  [0] doctrine/doctrine-bundle
+  [1] doctrine/doctrine-migrations-bundle
+  [2] symfony/flex
+  [3] symfony/framework-bundle
+  [4] symfony/mailer
+  [5] symfony/messenger
+  [6] symfony/phpunit-bridge
+  [7] symfony/routing
+  [8] symfony/webapp-pack
+  [9] symfony/webpack-encore-bundle
+ >
+  Updating recipe for doctrine/doctrine-bundle...
+```
